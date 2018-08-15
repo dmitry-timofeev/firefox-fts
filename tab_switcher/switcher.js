@@ -56,21 +56,24 @@ $(window).on('keydown', event => {
 	const key = event.originalEvent.key;
 
 	if (key === 'ArrowDown') {
-		setSelectedString(getSelectedString() + 1);
+		setSelectedString(getSelectedStringIndex() + 1);
 		event.preventDefault();
 	} else if (key === 'ArrowUp') {
-		setSelectedString(getSelectedString() - 1);
+		setSelectedString(getSelectedStringIndex() - 1);
 		event.preventDefault();
 	} else if (key === 'PageDown') {
-		setSelectedString(Math.min(getSelectedString() + 13, getTableSize() - 1));
+		setSelectedString(Math.min(getSelectedStringIndex() + 13, getTableSize() - 1));
 		event.preventDefault();
 	} else if (key === 'PageUp') {
-		setSelectedString(Math.max(getSelectedString() - 13, 0));
+		setSelectedString(Math.max(getSelectedStringIndex() - 13, 0));
 		event.preventDefault();
 	} else if (key === 'Escape') {
 		window.close();
 	} else if (key === 'Enter') {
 		activateTab();
+	} else if (key === 'Delete') {
+		closeTab();
+		// todo: eventPreventdefault?
 	}
 });
 
@@ -122,7 +125,7 @@ function getTableSize() {
 	return $('#tabs_table tbody tr').length;
 }
 
-function getSelectedString() {
+function getSelectedStringIndex() {
 	return selectedString ? selectedString.data('index') : undefined;
 }
 
@@ -132,7 +135,7 @@ async function activateTab() {
 	}
 
 	// Switch to the target tab
-	const tabId = selectedString.data('tabId');
+	const tabId = getSelectedTabId();
 
 	await browser.tabs.update(tabId, {active: true});
 
@@ -142,4 +145,20 @@ async function activateTab() {
 
 	// Close the tab switcher pop up
 	window.close();
+}
+
+async function closeTab() {
+	if (!selectedString) {
+		return;
+	}
+	const tabId = getSelectedTabId();
+	
+	// Close the selected tab
+	await browser.tabs.remove(tabId);
+
+	// Todo: reload the tabs, set selected properly
+}
+
+function getSelectedTabId() {
+	return selectedString.data('tabId');
 }
